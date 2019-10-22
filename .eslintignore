@@ -1,0 +1,8 @@
+# /node_modules/* in the project root is ignored by default
+# build artifacts
+lib/*
+coverage/*
+# data definition files
+**/*.d.ts
+# spec files
+**/*.spec.ts
