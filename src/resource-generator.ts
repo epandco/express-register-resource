@@ -90,10 +90,12 @@ export class ResourceGenerator<T extends { [key: string]: any }> {
     }
 
     const router = express.Router();
-    //const resourceMiddleware: ResourceHandler[] = this.getMetadataByKey('resource-middleware');
+    const resourceMiddleware: ResourceHandler[] = this.getMetadataByKey('express-resource-middleware');
 
     for (const key of routeKeys) {
-      const route:ResourceRouteMetadata = this.getMetadataByKey(key);
+      const route: ResourceRouteMetadata = this.getMetadataByKey(key);
+      const routeMiddelware: ResourceHandler[] = this.getMetadataByKey(`express-route-middleware-${route.methodKey}`);
+
       const fullPath = `${basePath}${route.path}`;
 
       console.log(`    adding route: ${route.resourceType} ${route.method.toUpperCase()} ${fullPath}`);
@@ -116,11 +118,13 @@ export class ResourceGenerator<T extends { [key: string]: any }> {
         middleware.push(express.json() as ResourceHandler);
       }
 
-      /*
       if (resourceMiddleware) {
         middleware.push(...resourceMiddleware);
       }
-      */
+
+      if (routeMiddelware) {
+        middleware.push(...routeMiddelware);
+      }
 
       if (!route.resourceRenderer) {
         // Get default ResourceRenderer for this resourceType if none is passed in.
