@@ -1,6 +1,6 @@
 {
   "name": "express-resource-generator",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A very opinionated resource generator for express for both pure JSON APIs and templated routes",
   "scripts": {
     "prepare": "npm run build",
