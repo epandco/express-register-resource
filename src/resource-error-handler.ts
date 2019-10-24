@@ -11,6 +11,7 @@ export async function resourceErrorHandler(err: any, req: ResourceRequest, resp:
 
   if (!renderer) {
     req.log.fatal('Unable to get resource renderer from req.local._renderer.');
+    req.log.fatal(err, 'Error passed in.');
     if (!resp.headersSent) {
       resp.status(500).send('fatal error check logs');
       return;

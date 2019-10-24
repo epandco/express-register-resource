@@ -18,13 +18,14 @@ export function resourceHandlerFactory<T extends { [key: string]: any }>(
   resource: { new (...args: any[]): T },
   container: Container): ResourceHandler {
 
-  if (!route.resourceRenderer) {
-    throw new Error('A resourceRenderer MUST be set on a route before being passed into the apiHandlerFunction');
-  }
-
-  const renderer = route.resourceRenderer;
-
   return async (req: ResourceRequest, resp: Response, next: Function) => {
+    // This gets injected up stream and should already be set!
+    const renderer = req.local._renderer;
+    if (!renderer) {
+      next('Unable to get renderer for route.');
+      return;
+    }
+
     resp.contentType(renderer.contentType);
 
     try {
