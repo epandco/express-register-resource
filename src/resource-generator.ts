@@ -110,6 +110,10 @@ export function registerResource(app: express.Application, resource: Resource, c
     const resourceRenderer = route.resourceRenderer;
     const injectRouteRenderer = (req: ResourceRequest, _resp: Response, next: Function): void => {
       try {
+        if (!req.local) {
+          req.local = {};
+        }
+
         req.local._renderer = resourceRenderer;
         next();
       }
