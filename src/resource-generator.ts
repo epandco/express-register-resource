@@ -99,11 +99,18 @@ export function registerResource(app: express.Application, resource: Resource, c
 
     const middleware: ResourceHandler[] = [pinoMiddleware];
 
+    if (!route.resourceRenderer) {
+      // Get default ResourceRenderer for this resourceType if none is passed in.
+      // This will likely be the the normal case.
+      route.resourceRenderer = getDefaultRenderer(route.resourceType);
+    }
+
     // Inject the resource renderer into the route to be used
     // downstream
+    const resourceRenderer = route.resourceRenderer;
     const injectRouteRenderer = (req: ResourceRequest, _resp: Response, next: Function): void => {
       try {
-        req.local._renderer = route.resourceRenderer;
+        req.local._renderer = resourceRenderer;
         next();
       }
       catch (error) {
@@ -113,22 +120,16 @@ export function registerResource(app: express.Application, resource: Resource, c
       }
     };
 
+    // First thing we do is attach the route renderer to the request
+    // if this were to throw an error we would not know what type to handle
+    // but it SHOULD NEVER throw an error
+    middleware.push(injectRouteRenderer);
+
     if (route.resourceType == ResourceType.API) {
      // Coercing the type express.json middleware here into the ResourceHandler type
      // this should be ok as the signatures match. ResourceRequest is just a normal Express Request.
       middleware.push(express.json() as ResourceHandler);
     }
-
-    if (!route.resourceRenderer) {
-      // Get default ResourceRenderer for this resourceType if none is passed in.
-      // This will likely be the the normal case.
-      route.resourceRenderer = getDefaultRenderer(route.resourceType);
-    }
-
-    // First thing we do is attach the route renderer to the request
-    // if this were to throw an error we would not know what type to handle
-    // but it SHOULD NEVER throw an error
-    resourceMiddleware.push(injectRouteRenderer);
 
     if (resourceMiddleware) {
       middleware.push(...resourceMiddleware);
