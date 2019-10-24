@@ -4,14 +4,23 @@ import * as express from 'express';
 import * as pino from 'express-pino-logger';
 import { Container } from 'inversify';
 import { pinoLogLevel } from './config';
-import { ResourceHandler } from './resource-handler';
-import { templateHandler } from './template-handler';
-import { apiHandler } from './api-handler';
+import { ResourceHandler, ResourceRequest } from './resource-handler';
+import { resourceHandlerFactory } from './resource-handler-factory';
 import { ResourceRouteMetadata, ResourceType, getDefaultRenderer } from 'resource-decorator';
+import { resourceErrorHandler } from './resource-error-handler';
+import { Response } from 'express-serve-static-core';
 
 const pinoMiddleware = pino({
   level: pinoLogLevel
 });
+
+function getMetadataByKey(key: string, resource: Resource): any {
+  return Reflect.getMetadata(key, resource.prototype);
+}
+
+function getMetadataKeys(resource: Resource): string[] {
+  return Reflect.getMetadataKeys(resource.prototype);
+}
 
 /**
  * Takes type T that has been decorated as a resource and
@@ -24,54 +33,22 @@ const pinoMiddleware = pino({
  * 
  * @throws Error if the resource is not decorated correctly.
  */
-export class ResourceGenerator<T extends { [key: string]: any }> {
-  private resource: { new (...args: any[]): T};
-  private container: Container; 
 
-  /**
-   * @param resource the decorated resource of type T to generate
-   * @param container an inversify container to use when resolving instances of type T.
-   */
-  constructor(resource: { new (...args: any[]): T}, container: Container) {
-    this.resource = resource;
-    this.container = container;
-  }
+type Resource =  { new (...args: any[]): any};
 
-  private getMetadataByKey(key: string): any {
-    return Reflect.getMetadata(key, this.resource.prototype);
-  }
-
-  private getMetadataKeys(): string[] {
-    return Reflect.getMetadataKeys(this.resource.prototype);
-  }
-
-  private wrapResource(route: ResourceRouteMetadata): ResourceHandler {
-    switch (route.resourceType) {
-      case ResourceType.API: 
-        return apiHandler(route, this.resource, this.container);
-        break;
-      case ResourceType.TEMPLATE:
-        return templateHandler(route, this.resource, this.container);
-        break;
-      case ResourceType.FILE:
-        throw new Error('File render types not supported yet');
-        break;
-      default:
-        throw new Error('Unexecpted render type');
-    }
-  }
+export class ResourceGenerator {
 
   /**
    * Generates an express router that represents the resource defined by type T
    */
-  generate(): express.Router {
-    const routeKeys = this
-      .getMetadataKeys()
-      .filter((md: string) => md.startsWith('route-'));
+  register(app: express.Application, resource: Resource, container: Container ): void {
+    const routeKeys = getMetadataKeys(resource).filter((md: string) => md.startsWith('route-'));
+    const resourceName = resource.name;
+    const genVersion = getMetadataByKey(
+      'resource-generator-version',
+      resource
+    );
 
-    const resourceName = this.resource.name;
-
-    const genVersion = this.getMetadataByKey('resource-generator-version');
     if (!genVersion) {
       throw Error(`${resourceName} is missing the resource decorator. Please check that the class has the decorator on it`);
     }
@@ -81,7 +58,11 @@ export class ResourceGenerator<T extends { [key: string]: any }> {
 
     console.log(`Generating resource: ${resourceName}`);
 
-    let basePath: string | null | undefined = this.getMetadataByKey('base-path');
+    let basePath: string | null | undefined = getMetadataByKey(
+      'base-path',
+      resource
+    );
+
     if (basePath) {
       console.log(`    base path: ${basePath}`);
     }
@@ -90,40 +71,38 @@ export class ResourceGenerator<T extends { [key: string]: any }> {
     }
 
     const router = express.Router();
-    const resourceMiddleware: ResourceHandler[] = this.getMetadataByKey('express-resource-middleware');
+    const resourceMiddleware: ResourceHandler[] = getMetadataByKey(
+      'express-resource-middleware',
+      resource
+    );
 
     for (const key of routeKeys) {
-      const route: ResourceRouteMetadata = this.getMetadataByKey(key);
-      const routeMiddelware: ResourceHandler[] = this.getMetadataByKey(`express-route-middleware-${route.methodKey}`);
+      const route: ResourceRouteMetadata = getMetadataByKey(key, resource);
+      const routeMiddleware: ResourceHandler[] = getMetadataByKey(
+        `express-route-middleware-${route.methodKey}`,
+        resource
+      );
 
-      const fullPath = `${basePath}${route.path}`;
+      console.log(`    adding route: ${route.resourceType} ${route.method.toUpperCase()} ${route.path}`);
 
-      console.log(`    adding route: ${route.resourceType} ${route.method.toUpperCase()} ${fullPath}`);
-
-      /** 
+      /**
        * 
-       * middelware will stack like this per route
+       * middleware will stack like this per route
        * 
        * | JSON Body parser           | <- If applicable to route
+       * | Inject Renderer for Route  |
        * | Resource level Middleware  |
-       * | Route level Middeleware    |
-       * | Gereanted resource Wrapper | <- Always the last function in the chain for a route
-       * 
+       * | Route level Middleware     |
+       * | Generated resource Wrapper | <- Always the last function in the chain for a route
+       * | Resource error handler     | <- Always the last function in the chain for a route
+       *
        */ 
       const middleware: ResourceHandler[] = [pinoMiddleware];
 
       if (route.resourceType == ResourceType.API) {
        // Coercing the type express.json middleware here into the ResourceHandler type
-       // this should be ok as the singatures match. ResourceRequest is just a normal Express Request.
+       // this should be ok as the signatures match. ResourceRequest is just a normal Express Request.
         middleware.push(express.json() as ResourceHandler);
-      }
-
-      if (resourceMiddleware) {
-        middleware.push(...resourceMiddleware);
-      }
-
-      if (routeMiddelware) {
-        middleware.push(...routeMiddelware);
       }
 
       if (!route.resourceRenderer) {
@@ -132,12 +111,48 @@ export class ResourceGenerator<T extends { [key: string]: any }> {
         route.resourceRenderer = getDefaultRenderer(route.resourceType);
       }
 
-      const wrapper: ResourceHandler = this.wrapResource(route);
-      middleware.push(wrapper);
+      const injectRouteRenderer = (req: ResourceRequest, resp: Response, next: Function): void => {
+        try {
+          req.local._renderer = route.resourceRenderer;
+          next();
+        }
+        catch (error) {
+          req.log.fatal(error, 'Unable to set renderer for the router');
+          resp.status(500).send('fatal error check logs');
+        }
+      };
 
-      router[route.method](fullPath, ...middleware);
+      // First thing we do is attach the route renderer to the request
+      // if this were to throw an error we would not know what type to handle
+      // but it SHOULD NEVER throw an error
+      resourceMiddleware.push(injectRouteRenderer);
+
+      if (resourceMiddleware) {
+        middleware.push(...resourceMiddleware);
+      }
+
+      if (routeMiddleware) {
+        middleware.push(...routeMiddleware);
+      }
+
+      let resourceHandler;
+      switch (route.resourceType) {
+        case ResourceType.API:
+        case ResourceType.TEMPLATE:
+          resourceHandler = resourceHandlerFactory(route, resource, container);
+          break;
+        case ResourceType.FILE:
+          throw new Error('File render types not supported yet');
+          break;
+        default:
+          throw new Error('Unexpected render type');
+      }
+      middleware.push(resourceHandler);
+
+      router[route.method](route.path, ...middleware);
     }
 
-    return router;
+    router.use(resourceErrorHandler);
+    app.use(basePath, router);
   }
 }
