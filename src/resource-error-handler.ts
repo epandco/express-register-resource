@@ -22,19 +22,19 @@ export async function resourceErrorHandler(err: any, req: ResourceRequest, resp:
 
   try {
     if (err instanceof ResourceError) {
-      const rendered = renderer.expectedError(err);
+      const rendered = await renderer.expectedError(err);
       resp.status(400).send(rendered);
       return;
     }
 
     if (err instanceof ResourceNotFound) {
-      const rendered = renderer.notFound();
+      const rendered = await renderer.notFound();
       resp.status(404).send(rendered);
       return;
     }
 
     if (typeof err === 'string') {
-      const rendered = renderer.unexpectedError(err);
+      const rendered = await renderer.unexpectedError(err);
       req.log.fatal(err);
       resp.status(500).send(rendered);
       return;

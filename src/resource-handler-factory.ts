@@ -51,7 +51,7 @@ export function resourceHandlerFactory<T extends { [key: string]: any }>(
           handleCookies(model, resp);
 
           if (model instanceof ResourceContent) {
-            const rendered = renderer.ok(model);
+            const rendered = await renderer.ok(model);
             resp.status(200).send(rendered);
             return;
           }
@@ -89,8 +89,8 @@ export function resourceHandlerFactory<T extends { [key: string]: any }>(
             return;
           }
 
-          if (model instanceof  ResourceTemplateContent) {
-            const rendered = renderer.ok(model);
+          if (model instanceof ResourceTemplateContent) {
+            const rendered = await renderer.ok(model);
             resp.status(200).send(rendered);
             return;
           }
