@@ -1,4 +1,4 @@
-import {ResourceHandler} from './resource-handler';
+import { ResourceHandler } from './resource-handler';
 
 
 export function resourceMiddleware(middleware: ResourceHandler[]) {
