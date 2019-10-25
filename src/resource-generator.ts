@@ -1,5 +1,4 @@
 import 'reflect-metadata';
-
 import * as express from 'express';
 import * as pino from 'express-pino-logger';
 import { Container } from 'inversify';
@@ -77,8 +76,8 @@ export function registerResource(app: express.Application, resource: Resource, c
    *
    * middleware will stack like this per route
    *
-   * | JSON Body parser           | <- If applicable to route
    * | Inject Renderer for Route  |
+   * | JSON Body parser           | <- If applicable to route
    * | Resource level Middleware  |
    * | Route level Middleware     |
    * | Generated resource Wrapper | <- Always the last function in the chain for a route

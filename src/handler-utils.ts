@@ -1,8 +1,9 @@
 import { Container } from 'inversify';
-import { Request, Response, Dictionary } from 'express-serve-static-core';
+import { Dictionary, Request, Response } from 'express-serve-static-core';
 import { Logger } from 'pino';
-import { ResourceRouteMetadata, ResourceResponseWithCookies } from 'resource-decorator';
+import { ResourceResponseWithCookies, ResourceRouteMetadata } from 'resource-decorator';
 import { TYPES } from './di-container';
+
 
 export function resolveArgs(route: ResourceRouteMetadata, req: Request<Dictionary<string>>): any[] {
   const argArray = new Array<any>(route.totalParameters);
@@ -25,10 +26,9 @@ export function resolveArgs(route: ResourceRouteMetadata, req: Request<Dictionar
   for (const localParam of route.localParams) {
     // casting to any since request may not have 'local' as parameter
     // local being used to pass things between middleware
-    const reqAny: any = <any>(req);
+    const reqAny = req as any;
     if (reqAny.local) {
-      const value = reqAny.local[localParam.name];
-      argArray[localParam.index] = value;
+      argArray[localParam.index] = reqAny.local[localParam.name];
     }
   }
 
@@ -71,10 +71,10 @@ export function handleCookies(model: ResourceResponseWithCookies, resp: Response
   if (model instanceof ResourceResponseWithCookies && model.cookies) {
     for (const cookie of model.cookies) {
       if (cookie.options) {
-        resp.cookie(cookie.name, cookie.value, cookie.options)
+        resp.cookie(cookie.name, cookie.value, cookie.options);
       }
       else {
-        resp.cookie(cookie.name, cookie.value)
+        resp.cookie(cookie.name, cookie.value);
       }
     }
   }
