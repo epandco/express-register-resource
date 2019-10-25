@@ -47,23 +47,19 @@ export async function invokeResource<T extends { [key: string]: any }>(
   ): Promise<any> {
 
   try {
-    if (container.isBound(TYPES.PinoLogger)) {
-      // This should never happen with the finally block
-      // unbinding.
-
-      req.log.error('PinoLogger was already bound. This should not happen but unbinding to avoid error.');
-      container.unbind(TYPES.PinoLogger);
-    }
-
+    // Bind just before resolving the instance
     container.bind<Logger>(TYPES.PinoLogger).toConstantValue(req.log);
     const instance: T = container.resolve(resource);
+
+    // Now unbind and then invoke the resource
+    container.unbind(TYPES.PinoLogger);
+
     const args = resolveArgs(route, req);
     const model = await instance[route.methodKey](...args);
 
     return model;
   }
   finally {
-    container.unbind(TYPES.PinoLogger);
   }
 }
 
