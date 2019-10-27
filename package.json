@@ -1,6 +1,6 @@
 {
   "name": "express-register-resource",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "A very opinionated resource frameowrk for express",
   "scripts": {
     "prepare": "npm run build",
