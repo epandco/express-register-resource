@@ -1,3 +1,3 @@
-# Resource Generator
+# Express Register Resource
 
-An opinionated http resource generator for express.
+An opinionated http resource framework for express

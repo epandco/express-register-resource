@@ -1,7 +1,7 @@
 import { Container } from 'inversify';
 import { Dictionary, Request, Response } from 'express-serve-static-core';
 import { Logger } from 'pino';
-import { ResourceResponseWithCookies, ResourceRouteMetadata } from 'resource-decorator';
+import { CookieBase, ResourceRouteMetadata } from 'resource-decorator';
 import { TYPES } from './di-container';
 
 
@@ -63,8 +63,8 @@ export async function invokeResource<T extends { [key: string]: any }>(
   }
 }
 
-export function handleCookies(model: ResourceResponseWithCookies, resp: Response) {
-  if (model instanceof ResourceResponseWithCookies && model.cookies) {
+export function handleCookies(model: CookieBase, resp: Response) {
+  if (model instanceof CookieBase && model.cookies) {
     for (const cookie of model.cookies) {
       if (cookie.options) {
         resp.cookie(cookie.name, cookie.value, cookie.options);

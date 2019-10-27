@@ -4,12 +4,12 @@ import { Container } from 'inversify';
 import { Response } from 'express-serve-static-core';
 import { ResourceHandler, ResourceRequest } from './resource-handler';
 import {
-  ResourceContent,
-  ResourceRedirect,
-  ResourceResponseWithCookies,
+  CookieResponse,
+  TemplateResponse,
+  ApiResponse,
   ResourceRouteMetadata,
-  ResourceTemplateContent,
-  ResourceType
+  ResourceType,
+  RedirectResponse
 } from 'resource-decorator';
 import { handleCookies, invokeResource } from './handler-utils';
 
@@ -50,13 +50,13 @@ export function resourceHandlerFactory<T extends { [key: string]: any }>(
           const model = await invokeResource(route, req, resource, container);
           handleCookies(model, resp);
 
-          if (model instanceof ResourceContent) {
+          if (model instanceof ApiResponse) {
             const rendered = await renderer.ok(model);
             resp.status(200).send(rendered);
             return;
           }
 
-          if (!model || model instanceof ResourceResponseWithCookies) {
+          if (!model || model instanceof CookieResponse) {
             resp.status(201).send();
             return;
           }
@@ -89,13 +89,13 @@ export function resourceHandlerFactory<T extends { [key: string]: any }>(
             return;
           }
 
-          if (model instanceof ResourceTemplateContent) {
+          if (model instanceof TemplateResponse) {
             const rendered = await renderer.ok(model);
             resp.status(200).send(rendered);
             return;
           }
 
-          if (model instanceof ResourceRedirect) {
+          if (model instanceof RedirectResponse) {
             // The default of the resp.redirect method
             let statusCode = 302;
 
