@@ -41,12 +41,10 @@ export async function resourceErrorHandler(err: any, req: ResourceRequest, resp:
       return;
     }
 
-    if (typeof err === 'string') {
-      req.log.fatal(err);
-      const rendered = await renderer.fatalError('Fatal error please check logs');
-      resp.status(500).send(rendered);
-      return;
-    }
+    req.log.fatal(err);
+    const rendered = await renderer.fatalError('Fatal error please check logs');
+    resp.status(500).send(rendered);
+    return;
   } catch (error) {
     req.log.fatal('unexpected error');
     req.log.fatal(err);

@@ -46,21 +46,17 @@ export async function invokeResource<T extends { [key: string]: any }>(
     container: Container
   ): Promise<any> {
 
-  try {
-    // Bind just before resolving the instance
-    container.bind<Logger>(TYPES.PinoLogger).toConstantValue(req.log);
-    const instance: T = container.resolve(resource);
+  // Bind just before resolving the instance
+  container.bind<Logger>(TYPES.PinoLogger).toConstantValue(req.log);
+  const instance: T = container.resolve(resource);
 
-    // Now unbind and then invoke the resource
-    container.unbind(TYPES.PinoLogger);
+  // Now unbind and then invoke the resource
+  container.unbind(TYPES.PinoLogger);
 
-    const args = resolveArgs(route, req);
-    const model = await instance[route.methodKey](...args);
+  const args = resolveArgs(route, req);
+  const model = await instance[route.methodKey](...args);
 
-    return model;
-  }
-  finally {
-  }
+  return model;
 }
 
 export function handleCookies(model: CookieBase, resp: Response) {
