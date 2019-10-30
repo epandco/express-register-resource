@@ -57,7 +57,7 @@ export function resourceHandlerFactory<T extends { [key: string]: any }>(
           }
 
           if (!model || model instanceof CookieResponse) {
-            resp.status(201).send();
+            resp.status(204).send();
             return;
           }
 
