@@ -1,0 +1,1 @@
+{"version":3,"file":"resource-middleware.js","sourceRoot":"","sources":["../src/resource-middleware.ts"],"names":[],"mappings":";;AAGA,SAAgB,kBAAkB,CAAC,UAA6B;IAC9D,OAAO,CAAwC,WAAc,EAAE,EAAE;QAE/D,OAAO,CAAC,cAAc,CAAC,6BAA6B,EAAE,UAAU,EAAE,WAAW,CAAC,SAAS,CAAC,CAAC;QAEzF,OAAO,WAAW,CAAC;IACrB,CAAC,CAAC;AACJ,CAAC;AAPD,gDAOC"}

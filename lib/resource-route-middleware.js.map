@@ -1,0 +1,1 @@
+{"version":3,"file":"resource-route-middleware.js","sourceRoot":"","sources":["../src/resource-route-middleware.ts"],"names":[],"mappings":";;AAGA,SAAgB,uBAAuB,CAAC,UAA6B;IACnE,OAAO,CAAI,MAAS,EAAE,GAAW,EAAE,UAAwC,EAAE,EAAE;QAC7E,OAAO,CAAC,cAAc,CAAC,4BAA4B,GAAG,EAAE,EAAE,UAAU,EAAE,MAAM,CAAC,CAAC;QAE9E,OAAO,UAAU,CAAC;IACpB,CAAC,CAAC;AACJ,CAAC;AAND,0DAMC"}

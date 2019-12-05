@@ -3,7 +3,7 @@
   "version": "2.0.3",
   "description": "A very opinionated resource frameowrk for express",
   "scripts": {
-    "postinstall": "npm run build",
+    "prepare": "npm run build",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "npm run lint-server",
     "lint-server": "./node_modules/.bin/eslint \"**/*.{js,ts}\" --quiet --fix",
