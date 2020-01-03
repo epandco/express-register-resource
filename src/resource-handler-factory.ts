@@ -139,6 +139,7 @@ export function resourceHandlerFactory<T extends { [key: string]: any }>(
               resp.set('Content-disposition', 'attachment; filename=' + model.fileName);
               resp.set('Content-Type', model.contentType);
               model.content.pipe(resp);
+              return;
             }
 
             if (model.content instanceof Buffer) {
