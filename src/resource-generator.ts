@@ -146,10 +146,8 @@ export function registerResource(app: express.Application, resource: Resource, c
     switch (route.resourceType) {
       case ResourceType.API:
       case ResourceType.TEMPLATE:
-        resourceHandler = resourceHandlerFactory(route, resource, container);
-        break;
       case ResourceType.FILE:
-        throw new Error('File render types not supported yet');
+        resourceHandler = resourceHandlerFactory(route, resource, container);
         break;
       default:
         throw new Error('Unexpected render type');

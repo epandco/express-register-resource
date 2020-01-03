@@ -9,9 +9,12 @@ import {
   ApiResponse,
   ResourceRouteMetadata,
   ResourceType,
-  RedirectResponse
+  RedirectResponse,
+  FileResponse
 } from 'resource-decorator';
+
 import { handleCookies, invokeResource } from './handler-utils';
+import { Stream } from 'stream';
 
 
 export function resourceHandlerFactory<T extends { [key: string]: any }>(
@@ -104,6 +107,45 @@ export function resourceHandlerFactory<T extends { [key: string]: any }>(
             }
 
             resp.redirect(statusCode, model.redirectUrl);
+            return;
+          }
+
+          next(`${typeof model} is not a valid type for ${route.resourceType}`);
+        } catch (error) {
+          next(error);
+        }
+      };
+
+      // Intentionally left in even thought it's not reachable DO NOT REMOVE
+      break;
+    case ResourceType.FILE:
+      return async (req: ResourceRequest, resp: Response, next: Function): Promise<void> => {
+
+        //default this for now
+        //will be set later
+        resp.contentType('text/html');
+
+        try {
+
+          const model = await invokeResource(route, req, resource, container);
+
+          if (model instanceof FileResponse) {
+            if (!model.content) {
+              next('No content was provided.');
+            }
+
+            if (model.content instanceof Stream) {
+                          //TODO- make this optional
+              resp.set('Content-disposition', 'attachment; filename=' + model.fileName);
+              resp.set('Content-Type', model.contentType);
+              model.content.pipe(resp);
+            }
+
+            if (model.content instanceof Buffer) {
+              next('Buffer not implemented yet.');
+            }
+
+            next(`${typeof model.content} is invalid.`);
             return;
           }
 
