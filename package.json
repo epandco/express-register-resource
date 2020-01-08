@@ -45,7 +45,7 @@
     "express": "~4.17.1",
     "dotenv": "~8.1.0",
     "express-pino-logger": "~4.0.0",
-    "resource-decorator": "git+https://github.com/epandco/resource-decorator#2.0.1"
+    "resource-decorator": "git+https://github.com/epandco/resource-decorator#3cb123d6b45875ae10ab6648ef98fb4dca707c75"
   },
   "peerDependencies": {
     "inversify": "~5.0.1",
@@ -53,6 +53,6 @@
     "express": "~4.17.1",
     "dotenv": "~8.1.0",
     "express-pino-logger": "~4.0.0",
-    "resource-decorator": "git+https://github.com/epandco/resource-decorator#2.0.1"
+    "resource-decorator": "git+https://github.com/epandco/resource-decorator#3cb123d6b45875ae10ab6648ef98fb4dca707c75"
   }
 }
