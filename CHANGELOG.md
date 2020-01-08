@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## 2.04 - 2020-01-08
 
+- Updated package.json with correct versions for the resource-decorator package
+
+## 2.04 - 2020-01-08
+
 - Updated ResourceHandlerFactory to handle file stream downloads
 
 ## 2.0.3 - 2019-10-30
