@@ -47,7 +47,8 @@ export async function resourceErrorHandler(err: any, req: ResourceRequest, resp:
     return;
   } catch (error) {
     req.log.fatal('unexpected error');
-    req.log.fatal(err);
+    req.log.fatal(err, 'error passed into handler');
+    req.log.fatal(error, 'error generated in handler');
     if (!resp.headersSent) {
       resp.status(500).send();
     }
