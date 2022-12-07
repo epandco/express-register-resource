@@ -43,7 +43,7 @@
     "leasot": "^8.2.0",
     "inversify": "~5.0.1",
     "reflect-metadata": "~0.1.13",
-    "express": "~4.17.1",
+    "express": "~4.17.3",
     "dotenv": "~8.1.0",
     "express-pino-logger": "~4.0.0",
     "resource-decorator": "git+https://github.com/epandco/resource-decorator#2.0.4"
@@ -51,7 +51,7 @@
   "peerDependencies": {
     "inversify": "~5.0.1",
     "reflect-metadata": "~0.1.13",
-    "express": "~4.17.1",
+    "express": "~4.17.3",
     "dotenv": "~8.1.0",
     "express-pino-logger": "~4.0.0",
     "resource-decorator": "git+https://github.com/epandco/resource-decorator#2.0.4"
